@@ -1,0 +1,237 @@
+//233769 
+//asia sajid
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+
+
+namespace ConsoleApp9
+{
+
+
+   
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                StudentClub studentClub = new StudentClub(5000);
+                bool running = true;
+
+                while (running)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Student Club Management System");
+                    Console.WriteLine("-------------------------------");
+                    Console.WriteLine("1. Register a new society");
+                    Console.WriteLine("2. Allocate funding to societies");
+                    Console.WriteLine("3. Register an event for a society");
+                    Console.WriteLine("4. Display society funding information");
+                    Console.WriteLine("5. Display events for a society");
+                    Console.WriteLine("6. Exit");
+                    Console.Write("Select an option: ");
+
+                    string input = Console.ReadLine();
+
+                    switch (input)
+                    {
+                        case "1":
+                            RegisterSociety(studentClub);
+                            break;
+                        case "2":
+                            studentClub.DisperseFunds();
+                            Console.WriteLine("Funding allocated to societies.");
+                            break;
+                        case "3":
+                            RegisterEvent(studentClub);
+                            break;
+                        case "4":
+                            studentClub.DisplayFundingInfo();
+                            break;
+                        case "5":
+                            DisplaySocietyEvents(studentClub);
+                            break;
+                        case "6":
+                            running = false;
+                            break;
+                        default:
+                            Console.WriteLine("Invalid option. Please try again.");
+                            break;
+                    }
+
+                    if (input != "6")
+                    {
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
+                    }
+                }
+            }
+
+            static void RegisterSociety(StudentClub studentClub)
+            {
+                Console.Write("Enter society name: ");
+                string name = Console.ReadLine();
+                Console.Write("Enter team lead name: ");
+                string leadName = Console.ReadLine();
+                Console.Write("Enter team lead role: ");
+                string leadRole = Console.ReadLine();
+                Console.Write("Enter assistant team lead name: ");
+                string assistantName = Console.ReadLine();
+                Console.Write("Enter assistant team lead role: ");
+                string assistantRole = Console.ReadLine();
+
+                ClubRole teamLead = new ClubRole(leadName, leadRole, "");
+                ClubRole assistantTeamLead = new ClubRole(assistantName, assistantRole, "");
+                Society society = new Society(name, teamLead, assistantTeamLead);
+
+                studentClub.RegisterSociety(society);
+                Console.WriteLine($"Society '{name}' registered successfully.");
+            }
+
+            static void RegisterEvent(StudentClub studentClub)
+            {
+                Console.Write("Enter the society name to register an event for: ");
+                string societyName = Console.ReadLine();
+                Console.Write("Enter the event name: ");
+                string eventName = Console.ReadLine();
+
+                foreach (var society in studentClub.Societies)
+                {
+                    if (society.Name.Equals(societyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        society.AddActivity(eventName);
+                        Console.WriteLine($"Event '{eventName}' registered for society '{societyName}'.");
+                        return;
+                    }
+                }
+
+                Console.WriteLine($"Society '{societyName}' not found.");
+            }
+
+            static void DisplaySocietyEvents(StudentClub studentClub)
+            {
+                Console.Write("Enter the society name to display events: ");
+                string societyName = Console.ReadLine();
+
+                foreach (var society in studentClub.Societies)
+                {
+                    if (society.Name.Equals(societyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"Events for society '{societyName}':");
+                        foreach (var activity in society.Activities)
+                        {
+                            Console.WriteLine($"- {activity}");
+                        }
+                        return;
+                    }
+                }
+
+                Console.WriteLine($"Society '{societyName}' not found.");
+            }
+        }
+
+        public class ClubRole
+        {
+            public string Name { get; set; }
+            public string Role { get; set; }
+            public string ContactInfo { get; set; }
+
+            public ClubRole(string name, string role, string contactInfo)
+            {
+                Name = name;
+                Role = role;
+                ContactInfo = contactInfo;
+            }
+        }
+
+        public class Society
+        {
+            public string Name { get; set; }
+            public ClubRole TeamLead { get; set; }
+            public ClubRole AssistantTeamLead { get; set; }
+            public List<string> Activities { get; set; }
+            public double FundingAmount { get; set; }
+
+            public Society(string name, ClubRole teamLead, ClubRole assistantTeamLead)
+            {
+                Name = name;
+                TeamLead = teamLead;
+                AssistantTeamLead = assistantTeamLead;
+                Activities = new List<string>();
+                FundingAmount = 0;
+            }
+
+            public void AddActivity(string activity)
+            {
+                Activities.Add(activity);
+            }
+
+            public void ReceiveFunding(double amount)
+            {
+                FundingAmount += amount;
+            }
+
+            public string GetFundingInfo()
+            {
+                return $"Society: {Name}, Funding Amount: ${FundingAmount}";
+            }
+        }
+
+        public class StudentClub
+        {
+            public List<Society> Societies { get; private set; }
+            private double totalBudget;
+
+            public StudentClub(double budget)
+            {
+                Societies = new List<Society>();
+                totalBudget = budget;
+            }
+
+            public void RegisterSociety(Society society)
+            {
+                Societies.Add(society);
+            }
+
+            public void DisperseFunds()
+            {
+                foreach (var society in Societies)
+                {
+                    double amountToDisperse = 0;
+                    switch (society.Name.ToLower())
+                    {
+                        case "tech society":
+                            amountToDisperse = 600;
+                            break;
+                        case "literature society":
+                            amountToDisperse = 500;
+                            break;
+                        case "sports society":
+                            amountToDisperse = 500;
+                            break;
+                        default:
+                            amountToDisperse = 200;
+                            break;
+                    }
+
+                    if (totalBudget >= amountToDisperse)
+                    {
+                        society.ReceiveFunding(amountToDisperse);
+                        totalBudget -= amountToDisperse;
+                    }
+                }
+            }
+
+            public void DisplayFundingInfo()
+            {
+                foreach (var society in Societies)
+                {
+                    Console.WriteLine(society.GetFundingInfo());
+                }
+            }
+        }
+    }
